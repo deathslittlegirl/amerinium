@@ -4,3 +4,4 @@ from time import sleep
 
 class Boreala:
     
+    
