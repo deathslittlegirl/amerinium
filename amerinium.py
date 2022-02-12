@@ -1,5 +1,28 @@
 import random
+from tkinter import Variable
+from turtle import speed
+import amatomic as ama
+import amplanets
 from time import sleep
+
+from amplanets import Piscea
+
+location = Piscea
+location_name = Piscea.name
+
+class IT:
+
+    util = [ 'mine', 'scan', 'travel', 'automine' ]
+    diag = [ 'health', 'shield', 'inventory', 'wallet' ]
+    location = ""
+    
+    def command():
+        command = input("Command: ")
+        if command != "":
+        
+        else:
+            continue
+    
 
 class Shield1:
     
@@ -8,6 +31,7 @@ class Shield1:
     d_up = 32
     price = 35
     surface = "ribbed, transient"
+    
      
 class enemyShield:
     
@@ -20,7 +44,7 @@ class enemyShield:
 
 class Wallet: 
     
-    size = 200
+    size = 2222
     process_delay = 3
     
     
@@ -65,24 +89,22 @@ class ESP:
         
     def dmg_ps():
         
-        if EPS.armor == 0: 
+        if ESP.armor == 0: 
             ESP.health -= 10
         
         else:
             ESP.armor_sw()
 
-class IT:
-    
-    util = [ 'mine', 'scan', 'travel', 'automine' ]
-    diag = [ 'health', 'shield', 'inventory', 'wallet' ]
-    command = input("Command: ")
-    
-
 class Inv:
-    
-    materials = 150
-    max_space = 420
+
+    max_space = 36
     up_price = 45
+    contents = 0
+
+    Piscea.materials[0] = 0
+    Piscea.materials[1] = 0
+    Piscea.materials[2] = 0
+    
 
 class Miner: 
     
@@ -91,14 +113,54 @@ class Miner:
     strength = 3
     speed = 3
     
+    def mining():
+        print("Mining", location_name, "...")
+        sleep(2)
+        for n in range(0, Inv.max_space):
+            flip = [ 'a', 'b', 'c' ]
+
+            if random.choice(flip) == 'a':
+                location.materials[0] += Miner.strength
+                print(location.materials[0], location.materials_name[0], "collected.")
+                sleep(Miner.speed)
+                if location.materials[0] == Inv.max_space:
+                    break
+                    
+
+            elif random.choice(flip) == 'b':
+                location.materials[1] += Miner.strength
+                print(location.materials[1], location.materials_name[1], "collected.")
+                sleep(Miner.speed)
+                if location.materials[1] == Inv.max_space:
+                    break
+            
+            
+            elif random.choice(flip) == 'c':
+                location.materials[2] += Miner.strength
+                print(location.materials[2], location.materials_name[2], "collected.")
+                sleep(Miner.speed)
+                if location.materials[2] == Inv.max_space:
+                    break
+
+            else:
+                continue
+        
+        
+            
+            
+
+
+
     
 class PS:
+
     health = 100
     armor = 50
     shield = Shield1()
     inventory = Inv()
     weapon = lsCannon()
-    interface = IT()
+
+    
     
     def shield_dmg():
         
@@ -123,15 +185,31 @@ class PS:
         else:
             PS.armor_sw()    
             
-     
-    if IT.command == IT.diag[0]:
+# IT.command
+# util = [ 'mine', 'scan', 'travel', 'automine' ]
+# diag = [ 'health', 'shield', 'inventory', 'wallet' ]
+
+    if IT.command() == IT.diag[0]:
         print("Health:", health)  
     
-    if IT.command == IT.diag[1]:
+    if IT.command() == IT.diag[1]:
         print("Shield:", shield.density)
+    
+    if IT.command() == IT.util[2]:
+        zX = input("X, Y: ")
         
+        
+        if zX == amplanets.Piscea.code:
+            location = amplanets.Piscea.name
+            amplanets.Piscea.arrival()
+            
+    if IT.command() == IT.util[0]:
+        Miner.mining()
+
+
         
 
+           
 
 
 

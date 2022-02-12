@@ -16,7 +16,7 @@ class Iron:
 class Gold:
     
     name = "Gold"
-    cost = 45
+    cost = 70
 
 class Sulfur:
     
@@ -47,16 +47,56 @@ class Psycilobin:
 
 class Dextromethorphan: 
     
-    name = "Dextromethorphan Crystal"
+    name = "dxm.crystl"
     cost = 25
 
 
 class Diphenhydramine:
     
-    name = "Diphenhydramine Crystals"
+    name = "dph.crystl"
     cost = 10
 
 class Angelium: 
     
     name = "Angelium"
     cost = 222
+
+class Femininium:
+
+    name = "Femininium"
+    cost = 40
+
+class Ammonia:
+
+    name = "Ammonia"
+    cost = 20
+
+class Methane: 
+
+    name = "Methane"
+    cost = 15
+
+class Silver: 
+
+    name = "Silver"
+    cost = 60
+
+class Platinum: 
+
+    name = "Platinum"
+    cost = 90
+
+class Meteorite:
+
+    name = "Meteorite"
+    cost = 10
+
+class MR:
+
+    name = "Moon Rock"
+    cost = 8
+
+class Junk:
+
+    name = "Space Junk"
+    cost = 5
