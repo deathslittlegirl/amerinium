@@ -1,6 +1,9 @@
+from ctypes import util
 import random
-from tkinter import Variable
+from tkinter import Variable, dialog
 from turtle import speed
+
+from click import command
 import amatomic as ama
 import amplanets
 from time import sleep
@@ -10,19 +13,7 @@ from amplanets import Piscea
 location = Piscea
 location_name = Piscea.name
 
-class IT:
 
-    util = [ 'mine', 'scan', 'travel', 'automine' ]
-    diag = [ 'health', 'shield', 'inventory', 'wallet' ]
-    location = ""
-    
-    def command():
-        command = input("Command: ")
-        if command != "":
-        
-        else:
-            continue
-    
 
 class Shield1:
     
@@ -114,7 +105,7 @@ class Miner:
     speed = 3
     
     def mining():
-        print("Mining", location_name, "...")
+        print("Mining", location_name + "...")
         sleep(2)
         for n in range(0, Inv.max_space):
             flip = [ 'a', 'b', 'c' ]
@@ -187,30 +178,44 @@ class PS:
             
 # IT.command
 # util = [ 'mine', 'scan', 'travel', 'automine' ]
-# diag = [ 'health', 'shield', 'inventory', 'wallet' ]
+# diag = [ 'health', 'shield', 'inventory', 'wallet' ] 
 
-    if IT.command() == IT.diag[0]:
-        print("Health:", health)  
+class IT:
+
+    utility = [ 'mine', 'scan', 'travel', 'automine' ]
+    diag = [ 'health', 'shield', 'inventory', 'wallet' ]
     
-    if IT.command() == IT.diag[1]:
-        print("Shield:", shield.density)
-    
-    if IT.command() == IT.util[2]:
-        zX = input("X, Y: ")
+    command = ""
+
+    while command != "kill":
         
+        command = input("司令官V0.0.2: ")
         
-        if zX == amplanets.Piscea.code:
-            location = amplanets.Piscea.name
-            amplanets.Piscea.arrival()
+        while command == utility[2]:
+            zyX = input("X, Y: ")
+
+            if zyX == amplanets.Piscea.code:
+                location = Piscea
+                location_name = Piscea.name
+                amplanets.Piscea.arrival()
+                command = ""
             
-    if IT.command() == IT.util[0]:
-        Miner.mining()
-
-
-        
-
-           
-
-
-
+            else:
+                command = ""
             
+        while command == utility[0]:
+            Miner.mining()
+            command = ""
+            
+        while command == diag[0]:
+            print("Health:", PS.health)
+            command = ""
+            
+
+        while command == diag[1]:
+            print("Shield:", PS.shield.density)
+            command = ""
+        
+        else:
+            pass
+        
