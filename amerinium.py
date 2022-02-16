@@ -1,4 +1,5 @@
 from ctypes import util
+from importlib.resources import contents
 import random
 from tkinter import Variable, dialog
 from turtle import speed
@@ -33,10 +34,13 @@ class enemyShield:
     surface = "ribbed, transient"
      
 
-class Wallet: 
+class wallet: 
+    
+    name = "Beartech Money Packager"
     
     size = 2222
     process_delay = 3
+    money = 0
     
     
 class lsCannon:
@@ -55,6 +59,61 @@ class lsCannon:
     super_dmg = random.randrange(18, 30)
     super_crit = random.randrange(18, 48)
     super_price = 60
+
+class Inv:
+
+    max_space = 36
+    up_price = 45
+
+    location.materials[0] = 0
+    location.materials[1] = 0
+    location.materials[2] = 0
+
+    transfer_rate = 3
+    
+    def sell():
+        while True:
+            for heaven in location.materials[0], location.materials[1], location.materials[2]:
+                wallet.money += ama.Amerinium.price // ama.Amerinium.flux
+                print("Wallet:", wallet.money)
+                sleep(ama.Amerinium.transfer_rate)
+                
+                
+        
+        
+    
+class PS:
+
+    health = 100
+    armor = 50
+    shield = Shield1()
+    inventory = Inv()
+    weapon = lsCannon()
+
+    
+    
+    def shield_dmg():
+        
+        if Shield1.density < 0:
+            PS.armor_sw()
+        
+        else:
+            Shield1.density -= 3.5
+    
+    def armor_sw():
+        
+        if random.randint(1, 100) == 45:
+            PS.armor -= random.randrange(2, 4)
+        else:
+            PS.armor -= random.randrange(4, 10)
+        
+    def dmg_ps():
+        
+        if PS.armor == 0: 
+            PS.health -= 10
+        
+        else:
+            PS.armor_sw()
     
 class ESP:
      
@@ -85,17 +144,9 @@ class ESP:
         
         else:
             ESP.armor_sw()
-
-class Inv:
-
-    max_space = 36
-    up_price = 45
-    contents = 0
-
-    Piscea.materials[0] = 0
-    Piscea.materials[1] = 0
-    Piscea.materials[2] = 0
+        
     
+
 
 class Miner: 
     
@@ -182,8 +233,11 @@ class PS:
 
 class IT:
 
-    utility = [ 'mine', 'scan', 'travel', 'automine' ]
+    utility = [ 'mine', 'scan', 'travel', 'automine', 'sell' ]
     diag = [ 'health', 'shield', 'inventory', 'wallet' ]
+    offense = [ 'a', 'scan', 'sh', 'ff' ]
+    off_sp = [ 'sp.a', 'cat',  'aim' ] # cat = capture
+    
     
     command = ""
 
@@ -214,6 +268,10 @@ class IT:
 
         while command == diag[1]:
             print("Shield:", PS.shield.density)
+            command = ""
+        
+        while command == utility[4]:
+            Inv.sell()
             command = ""
         
         else:

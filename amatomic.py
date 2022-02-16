@@ -1,9 +1,17 @@
 import random
 from time import sleep 
 
+class Amerinium: 
+    
+    name = "Amerinium"
+    price = 20
+    flux = random.randrange(1, 30)
+    transfer_rate = random.randrange(1, 6)
+
+
 class THC:
     
-    name = "THC"
+    name = "THC Crystals"
     cost = 35
     quantity = 0
 
@@ -39,7 +47,7 @@ class Helium:
 
 class Diamond: 
     
-    name = "Diamond"
+    name = "Diamonds"
     cost = 60
     quantity = 0
     
@@ -72,7 +80,7 @@ class Angelium:
 
 class Femininium:
 
-    name = "Femininium"
+    name = "Femininium Crystals"
     cost = 40
     quantity = 0
 
