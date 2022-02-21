@@ -23,6 +23,7 @@ class Piscea():
     name = "Piscea V"
     materials = [ ama.THC, ama.Femininium, ama.Diamond ]
     materials_name = [ ama.THC.name,  ama.Femininium.name, ama.Diamond.name ]
+    materials_price = [ ama.THC.cost, ama.Femininium.cost, ama.Diamond.cost ]
     surface = "Watery, rainbow hue from multi-shifting, drug-addled atmosphere."
     smell = "Perfume-like, swathed in neptunian breeze, hard candy."
     rings = True

@@ -4,9 +4,9 @@ from time import sleep
 class Amerinium: 
     
     name = "Amerinium"
-    price = 20
-    flux = random.randrange(1, 30)
-    transfer_rate = random.randrange(1, 6)
+    price = 5
+    flux = random.randrange(3, 42)
+    transfer_rate = random.randrange(1, 4)
 
 
 class THC:
