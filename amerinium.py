@@ -54,11 +54,11 @@ class wallet:
     bank = 0
 
     def deposit():
-        wallet.bank = wallet.money
+        print('Initiating deposit of +', str(wallet.money))
         sleep(wallet.process_delay)
+        wallet.bank = wallet.money
         print("Æ: +" + str(wallet.money))
         wallet.money = 0
-        break
 
 class lsCannon:
 
@@ -81,13 +81,15 @@ class lsCannon:
 class Inv:
 
     max_space = 18
-    up_price = 45
 
     location.materials[0] = 0
     location.materials[1] = 0
     location.materials[2] = 0
 
-    transfer_rate = 3
+
+    ataxia = location.materials[0]
+    eden = location.materials[1]
+    japan = location.materials[2]
 
     def sell():
 
@@ -95,46 +97,47 @@ class Inv:
 
         while True:
 
-            if location.materials[0] <= 0:
-                    print("Nothing to sell.")
-                    sleep(2)
-                    break
-
-            elif location.materials[1] <= 0:
+            if Inv.ataxia <= 0:
                 print("Nothing to sell.")
                 sleep(2)
-                break
 
-            elif location.materials[2] <= 0:
+
+            elif Inv.eden <= 0:
                 print("Nothing to sell.")
                 sleep(2)
+
+
+            elif Inv.japan <= 0:
+                print("Nothing to sell.")
+                sleep(2)
+
+            else:
                 break
 
             # For every number of materials that player possesses, that material is sold for its price and depleted by 1.
 
-            for n in location.materials[0], location.materials[1], location.materials[2]:
+            for n in Inv.ataxia, Inv.eden, Inv.japan:
 
-                if n == location.materials[0]:
-                    location.materials[0] -= 1
+                if n == Inv.ataxia:
+                    Inv.ataxia -= 1
                     wallet.money += economy.price_one
 
-                elif n == location.materials[1]:
-                    location.materials[1] -= 1
+                elif n == Inv.eden:
+                    Inv.eden -= 1
                     wallet.money += economy.price_two
 
-                elif n == location.materials[2]:
-                    location.materials[2] -= 1
+                elif n == Inv.japan:
+                    Inv.japan -= 1
                     wallet.money += economy.price_three
 
                 print("財布:", "Æ" + str(wallet.money))
 
                 sleep(wallet.process_delay)
 
-
-
             if wallet.money >= wallet.size:
                 sleep(wallet.process_delay)
                 print("Wallet full, depositing Amerinium to bank.")
+                sleep(1)
                 wallet.deposit()
 
 
@@ -146,7 +149,6 @@ class PS:
     shield = Shield1()
     inventory = Inv()
     weapon = lsCannon()
-
 
 
     def shield_dmg():
@@ -208,13 +210,13 @@ class Miner:
 
     name = "LSP-1000"
 
-    strength = random.randint(1, 5)
-    speed = random.randint(3, 6)
+    strength = random.randint(2, 5)
+    speed = random.randint(3, 7)
 
     def mining():
         print("Mining", location_name + "...")
         sleep(2)
-        for n in range(0, Inv.max_space):
+        for n in range(0, 25):
             flip = [ 'a', 'b', 'c' ]
 
             if random.choice(flip) == 'a':
@@ -246,6 +248,8 @@ class Miner:
 
 class PS:
 
+
+    name = "Calcula I"
     health = 100
     armor = 50
     shield = Shield1()
@@ -289,7 +293,7 @@ class Shop:
     inv_up = 42
     wallet_up = 60
 
-
+    # Functions
 
     def online():
         print(Shop.comfort_msg)
@@ -299,7 +303,7 @@ class Shop:
 
 
     def listing():
-        print('++:', Shop.health_up)
+        print('++:', Shop.health_up) # Print health price
         sleep(2)
         print('shi+:', Shop.shield_up)
         sleep(2)
@@ -355,6 +359,10 @@ class IT:
 
         command = input("司令官: ")
 
+        while command == utility[0]:
+            Miner.mining()
+            command = ""
+
         while command == utility[2]:
             zyX = input("X, Y: ")
 
@@ -367,21 +375,16 @@ class IT:
             else:
                 command = ""
 
-        while command == utility[0]:
-            Miner.mining()
+        while command == utility[4]:
+            Inv.sell()
             command = ""
 
         while command == diag[0]:
             print("Health:", PS.health)
             command = ""
 
-
         while command == diag[1]:
             print("Shield:", PS.shield.density)
-            command = ""
-
-        while command == utility[4]:
-            Inv.sell()
             command = ""
 
         while command == shop[0]:
@@ -390,6 +393,22 @@ class IT:
             Shop.online()
             Shop.listing()
             command = ""
+
+        while command == shop[1]:
+            print("Upgrading", PS.name + "'s", 'health')
+            Shop.health_upgrade()
+
+        while command == shop[2]:
+            print("Upgrading", Shield1.name)
+            Shop.shield_upgrade()
+
+        while command == shop[3]:
+            print("Upgrading inventory...")
+            Shop.inv_upgrade()
+
+        while command == shop[4]:
+            print("Upgrading", wallet.name)
+            Shop.money_upgrade()
 
         while command == "clear":
             os.system('clear')
