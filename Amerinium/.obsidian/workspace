@@ -1,0 +1,96 @@
+{
+  "main": {
+    "id": "2beadcc72839495a",
+    "type": "split",
+    "children": [
+      {
+        "id": "8dd165be887b2275",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "Characters/Jenna Bloom.md",
+            "mode": "source",
+            "source": false
+          }
+        }
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "9415e7b23e3c0dd8",
+    "type": "split",
+    "children": [
+      {
+        "id": "c67143b55bb55838",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "3ba5917451ef9591",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "43f1b01d9f80d274",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "5972d8dff87e69d5",
+    "type": "split",
+    "children": [
+      {
+        "id": "49568dc502eb0098",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "88bd524f41096d8e",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Characters/Jenna Bloom.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "active": "8dd165be887b2275",
+  "lastOpenFiles": [
+    "Characters/Jenna Bloom.md",
+    "Lore/Quick Rundown.md",
+    "Materials/Americium.md"
+  ]
+}
