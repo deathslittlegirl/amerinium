@@ -100,27 +100,21 @@ class Inv:
 
         while True:
 
-            if Inv.box == [ 0, 0, 0 ]:
-                break
-
-            else:
-                continue
-
             # For every number of materials that player possesses, that material is sold for its price and depleted by 1.
 
-            for n in Inv.m_one, Inv.m_two, Inv.m_three:
+            for i in Inv.m_one, Inv.m_two, Inv.m_three:
 
-                if n == Inv.m_one:
+                if i == Inv.m_one:
                     print(location.materials_name[0], "-1/" + str(Inv.m_one))
                     Inv.m_one -= 1
                     wallet.money += economy.price_one
 
-                elif n == Inv.m_two:
+                elif i == Inv.m_two:
                     print(location.materials_name[1], "-1/" + str(Inv.m_two))
                     Inv.m_two -= 1
                     wallet.money += economy.price_two
 
-                elif n == Inv.m_three:
+                elif i == Inv.m_three:
                     print(location.materials_name[2], "-1/" + str(Inv.m_three))
                     Inv.m_three -= 1
                     wallet.money += economy.price_three
@@ -129,7 +123,7 @@ class Inv:
 
                 sleep(wallet.process_delay)
 
-            if wallet.money >= wallet.size:
+            if wallet.money == wallet.size:
                 sleep(wallet.process_delay)
                 print("Wallet full, depositing Amerinium to bank.")
                 sleep(1)
@@ -152,7 +146,7 @@ class PS:
 
     def shield_dmg():
 
-        if Shield1.density < 0:
+        if Shield1.density <= 0:
             PS.armor_sw()
 
         else:
@@ -279,7 +273,7 @@ class PS:
 
 class Shop:
 
-    name = "Midnight Bliss™️ E-Shop"
+    name = "The Midnight Bliss™️ E-Shop"
     comfort_msg = "Welcome to " + name + "."
 
     # Upgrade Prices
