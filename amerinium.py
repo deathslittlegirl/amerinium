@@ -2,7 +2,6 @@ import random
 import os
 import asyncio
 import shelve
-from unittest import result
 
 # game files
 
@@ -10,7 +9,7 @@ import amatomic as ama
 import amplanets
 from time import sleep
 
-from amplanets import Marici, Piscea
+from amplanets import Piscea
 location = Piscea
 location_name = Piscea.name
 
@@ -239,8 +238,8 @@ class Inv:
         
 class ESP:
 
-    health = 100
-    armor = 50
+    health = 30
+    armor = 20
     shield = Shield1()
     weapon = lsCannon()
     detected = False
@@ -249,7 +248,7 @@ class ESP:
 
     
 
-    def armor_sw():
+    async def armor_sw():
         
         while True:
 
@@ -263,6 +262,7 @@ class ESP:
                 else:
                     ESP.armor -= random.randrange(2, 4)
                     print('Enemy armor absorbed damage.')
+                    await asyncio.sleep(2)
                     break
                 
             elif ESP.armor - lsCannon.dmg <= 0:
@@ -273,6 +273,7 @@ class ESP:
             else:
                 ESP.armor -= lsCannon.dmg
                 print('Enemy armor damaged.')
+                await asyncio.sleep(2)
                 break
                 
                 
@@ -280,7 +281,7 @@ class ESP:
             
                    
     
-    def shield_dmg():
+    async def shield_dmg():
         while True:
 
             if enemyShield.density < 0:
@@ -294,11 +295,12 @@ class ESP:
                 else:
                     enemyShield.density -= lsCannon.dmg
                     print("Enemy shield damaged...")
+                    await asyncio.sleep(2)
                     break
                 
             
 
-    def dmg_esp():
+    async def dmg_esp():
         while True:
 
             if ESP.armor == 0:
@@ -314,7 +316,16 @@ class ESP:
     
             else:
                 print('Enemy armor mitigating damage.')
-                ESP.armor_sw()
+                await asyncio.sleep(2)
+                asyncio.run(ESP.armor_sw())
+                
+    async def enshipsaving():    
+        with shelve.open('saves/enship') as enshipsave:
+            enshipsave['health'] = ESP.health
+            enshipsave['shield'] = ESP.shield.density
+            enshipsave['armor'] = ESP.armor
+            upenship = {'health': ESP.health, 'shield': ESP.shield, 'armor': ESP.armor }
+            enshipsave.update(upenship)
                 
 
 class Miner:
@@ -402,19 +413,20 @@ class Miner:
 class PS:
 
     name = "Calcula I"
-    health = 100
-    armor = 50
+    health = 30
+    armor = 20
     shield = Shield1()
     inventory = Inv()
     weapon = lsCannon()
     in_combat = False
 
-    def shield_dmg():
+    async def shield_dmg():
         while True:
 
             if Shield1.density <= 0:
                 print("Shield cell empty.")
-                PS.armor_sw()
+                sleep(2)
+                asyncio.run(PS.armor_sw())
     
             else:
                 if Shield1.density - lsCannon.dmg <= 0:
@@ -423,8 +435,11 @@ class PS:
                 else:
                     Shield1.density -= lsCannon.dmg
                     print("Shield wall damaged.")
+                    await asyncio.sleep(2)
+                    break
 
-    def armor_sw():
+    async def armor_sw():
+        
         while True:
             
             # 45% chance to mitigate some damage with armor. 
@@ -436,6 +451,7 @@ class PS:
                 else:
                     PS.armor -= random.randrange(2, 3)
                     print("Armor has negated damage, somewhat...")
+                    await asyncio.sleep(2)
                     break
                 
             elif PS.armor - lsCannon.dmg <= 0:
@@ -445,9 +461,10 @@ class PS:
             else:
                 PS.armor -= lsCannon.dmg
                 print("Armor damaged...")
+                await asyncio.sleep(2)
                 break
 
-    def dmg_esp():
+    async def dmg_esp():
         
         while True:
         
@@ -462,25 +479,27 @@ class PS:
                     else:
                         ESP.health -= lsCannon.dmg # Or issue damage.
                         print("Enemy armor shredded... Raw damage given.")
+                        await asyncio.sleep(2)
                         break
         
                 else:
-                    ESP.armor_sw()
+                    await ESP.armor_sw()
                     break
                     
                     
             else:
                 print("You missed your shot.")
+                sleep(2)
                 break
     
-        
-    with shelve.open('saves/ship') as shipsave:
-        shipsave['health'] = health
-        shipsave['shield'] = shield.density
-        shipsave['armor'] = armor
-        shipsave['incombat'] = in_combat
-        upship = {'health': health, 'shield': shield, 'armor': armor, 'incombat': in_combat }
-        shipsave.update(upship)
+    async def shipsaving():    
+        with shelve.open('saves/ship') as shipsave:
+            shipsave['health'] = PS.health
+            shipsave['shield'] = PS.shield.density
+            shipsave['armor'] = PS.armor
+            shipsave['incombat'] = PS.in_combat
+            upship = {'health': PS.health, 'shield': PS.shield, 'armor': PS.armor, 'incombat': PS.in_combat }
+            shipsave.update(upship)
 
     def saveloc():
         
@@ -538,6 +557,7 @@ class Shop:
             print("SHI:", str(PS.shield.density))
             PS.shipsave.update(PS.upship)
             wallet.walsave()
+            PS.shipsaving()
             break
 
     def inv_upgrade():
@@ -549,6 +569,7 @@ class Shop:
             print("INV:", str(PS.inventory.max_space))
             Inv.insave()
             wallet.walsave()
+            PS.shipsaving()
             break
 
     def health_upgrade():
@@ -559,6 +580,7 @@ class Shop:
             PS.health = PS.health * 1.5
             print('+::', str(PS.health))
             wallet.walsave()
+            PS.shipsaving()
             break
 
     def money_upgrade():
@@ -588,7 +610,7 @@ class CIT:
     off_sp = [ 'sp.a', 'cat',  'aim' ] # cat = capture
     defense = ['sh']
     
-    def attacked():
+    async def attacked():
         
         while True:
             
@@ -603,14 +625,16 @@ class CIT:
                     else:
                         PS.health -= lsCannon.dmg
                         print("Player armor shredded... Raw damage taken.")
+                        await asyncio.sleep(2)
                         break
 
                 else:
-                    PS.armor_sw()
+                    await PS.armor_sw()
                     break
             
             else:
                 print('The enemy missed their shot.')
+                await asyncio.sleep(2)
                 break
                 
         
@@ -618,12 +642,24 @@ class CIT:
     def attacking():
         while True:
             
-            if ESP.health == 0:
+            if ESP.health <= 0:
                 print('Enemy defeated.')
+                ESP.health = 70
+                ESP.armor = 20
+                asyncio.run(ESP.enshipsaving())
+                PS.health = 70
+                PS.armor = 20
+                asyncio.run(PS.shipsaving())
                 break
             
-            elif PS.health == 0:
+            elif PS.health <= 0:
                 print('You have been defeated.')
+                ESP.health = 70
+                ESP.armor = 20
+                asyncio.run(ESP.enshipsaving())
+                PS.health = 70
+                PS.armor = 20
+                asyncio.run(PS.shipsaving())
                 break
             
             print('E+:', ESP.armor)
@@ -636,7 +672,8 @@ class CIT:
             CITF = input("CIT: ")
             
             if CITF == CIT.offense[0]:
-                PS.dmg_esp()
+                asyncio.run(PS.dmg_esp())
+                asyncio.run(CIT.attacked())
             
             if CITF == CIT.offense[2]:
                 break
@@ -646,13 +683,16 @@ class CIT:
                 
             if CITF == CIT.offense[3]:
                 if lsCannon.locked_on == True:
-                    ESP.health -= 30
-                else: 
+                    ESP.health -= lsCannon.super_dmg
+                    lsCannon.locked_on = False
+                else:
+                    print("Not locked on.")
                     pass
+            
                 
     def spawn():
-        if random.randrange(1, 100) <= 45:
-            ESP.engaged = True
+        #if random.randrange(1, 100) <= 45:
+        ESP.engaged = True
                 
         if ESP.engaged == True:
             CIT.attacking()
@@ -682,7 +722,7 @@ class IT:
         while command == utility[0]:
             asyncio.run(Miner.mining())
             asyncio.run(Inv.insave())
-            asyncio.run(CIT.spawn())            
+            CIT.spawn()           
             command = ""
 
 
@@ -724,23 +764,23 @@ class IT:
             asyncio.run(Inv.sell())
             wallet.walsave()
             asyncio.run(Inv.insave())
-            asyncio.run(CIT.spawn())  
+            CIT.spawn()  
             command = ""
 
         while command == diag[0]:
             print("Health:", PS.health)
-            asyncio.run(CIT.spawn())  
+            CIT.spawn()
             command = ""
 
         while command == diag[1]:
             print("Shield:", PS.shield.density)
-            asyncio.run(CIT.spawn())  
+            CIT.spawn()
             command = ""
 
         while command == money[1]:
             asyncio.run(wallet.deposit())
             wallet.walsave()
-            asyncio.run(CIT.spawn())  
+            CIT.spawn()
             command = ""
 
 
