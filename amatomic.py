@@ -1,16 +1,17 @@
 import random
 from time import sleep
-
+import asyncio
 class Amerinium:
 
     name = "Amerinium"
-    flux = random.randint(4, 42)
-    transfer_rate = random.randint(1, 4)
+    flux = random.randrange(4, 42)
+    transfer_rate = random.randrange(1, 4)
 
-    def fluxuation():
-        flux = 0
-        sleep(2)
-        flux = random.randint(4, 42)
+    async def fluxuation():
+        Amerinium.flux = 0
+        await asyncio.sleep(1)
+        Amerinium.flux = Amerinium.flux + random.randrange(4, 42)
+        
 
     def fluxflip():
 

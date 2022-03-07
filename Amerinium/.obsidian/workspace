@@ -9,7 +9,7 @@
         "state": {
           "type": "markdown",
           "state": {
-            "file": "Characters/Jenna Bloom.md",
+            "file": "Lore/Quick Rundown.md",
             "mode": "source",
             "source": false
           }
@@ -69,7 +69,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Characters/Jenna Bloom.md",
+                "file": "Lore/Quick Rundown.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -89,8 +89,8 @@
   },
   "active": "8dd165be887b2275",
   "lastOpenFiles": [
-    "Characters/Jenna Bloom.md",
     "Lore/Quick Rundown.md",
+    "Characters/Jenna Bloom.md",
     "Materials/Americium.md"
   ]
 }
