@@ -11,26 +11,17 @@ import amplanets
 from time import sleep
 
 from amplanets import Marici, Piscea
-
-class Positioning():
-    position = shelve.open('saves/locatio')   
-    location = Piscea
-    position['planet'] = location
-    location_name = Piscea.name
-    position['pl_name'] = location_name
-    position_up = {'planet': location, 'pl_name': location_name}
-    position.update(position_up)
-    
+location = Piscea
+location_name = Piscea.name
 
     
-
-
+    
 
 class economy:
 
-    price_one = Positioning.location.materials_price[0] / ama.Amerinium.flux
-    price_two = Positioning.location.materials_price[1] / ama.Amerinium.flux
-    price_three = Positioning.location.materials_price[2] / ama.Amerinium.flux
+    price_one = location.materials_price[0] / ama.Amerinium.flux
+    price_two = location.materials_price[1] / ama.Amerinium.flux
+    price_three = location.materials_price[2] / ama.Amerinium.flux
 
 class Shield1:
 
@@ -104,7 +95,7 @@ class lsCannon:
 
 
     # Normal Mode
-    dmg = random.randrange(2, 20)
+    dmg = random.randrange(2, 10)
     crit = random.randrange(14, 23)
     price = 40
 
@@ -124,9 +115,9 @@ class Inv:
 
     # Defining
 
-    # Positioning.location.materials[0] = 0
-    # Positioning.location.materials[1] = 0
-    # Positioning.location.materials[2] = 0
+    # location.materials[0] = 0
+    # location.materials[1] = 0
+    # location.materials[2] = 0
     
     sell_rate = 1
     
@@ -138,17 +129,17 @@ class Inv:
             
         with shelve.open('saves/invsave') as invsh:
             
-                Positioning.location.materials[0] = invsh['Material 0 Count']
-                Positioning.location.materials[1] = invsh['Material 1 Count']
-                Positioning.location.materials[2] = invsh['Material 2 Count']
+                location.materials[0] = invsh['Material 0 Count']
+                location.materials[1] = invsh['Material 1 Count']
+                location.materials[2] = invsh['Material 2 Count']
                 sell_rate = invsh['sell_rate']
     else:
         
         with shelve.open('saves/invsave') as invsh:
             
-            invsh['Material 0 Count'] = Positioning.location.materials[0]
-            invsh['Material 1 Count'] = Positioning.location.materials[1]
-            invsh['Material 2 Count'] = Positioning.location.materials[2]
+            invsh['Material 0 Count'] = location.materials[0]
+            invsh['Material 1 Count'] = location.materials[1]
+            invsh['Material 2 Count'] = location.materials[2]
             invsh['sell_rate'] = sell_rate
             
     if os.path.exists('saves/invsave'):
@@ -198,7 +189,7 @@ class Inv:
                     
                     else:
                         
-                        print(Positioning.location.materials_name[0] + ":", "-" + str(Inv.sell_rate), "from", str(Inv.m_one)) # "THC Crystals: -3 from 5"
+                        print(location.materials_name[0] + ":", "-" + str(Inv.sell_rate), "from", str(Inv.m_one)) # "THC Crystals: -3 from 5"
                         
                         Inv.m_one -= Inv.sell_rate
                         wallet.money += economy.price_one
@@ -210,7 +201,7 @@ class Inv:
                         pass
                     
                     else:    
-                        print(Positioning.location.materials_name[1] + ":", "-" + str(Inv.sell_rate), "from", str(Inv.m_two))
+                        print(location.materials_name[1] + ":", "-" + str(Inv.sell_rate), "from", str(Inv.m_two))
                         Inv.m_two -= Inv.sell_rate
                         wallet.money += economy.price_two
                         print("財布:", "Æ" + str(wallet.money))
@@ -221,7 +212,7 @@ class Inv:
                         pass
                     
                     else:  
-                        print(Positioning.location.materials_name[2] + ":", "-" + str(Inv.sell_rate), "from", str(Inv.m_three))
+                        print(location.materials_name[2] + ":", "-" + str(Inv.sell_rate), "from", str(Inv.m_three))
                         Inv.m_three -= Inv.sell_rate
                         wallet.money += economy.price_three
                         print("財布:", "Æ" + str(wallet.money))
@@ -259,27 +250,72 @@ class ESP:
     
 
     def armor_sw():
+        
+        while True:
 
-        if random.randint(1, 100) == 45:
-            ESP.armor -= random.randrange(2, 4)
-        else:
-            ESP.armor -= random.randrange(4, 10)
+            if random.randint(1, 100) <= 45:
+            
+                if ESP.armor - random.randrange(2, 4) <= 0:
+                    ESP.armor = 0
+                    break
+                    
+                
+                else:
+                    ESP.armor -= random.randrange(2, 4)
+                    print('Enemy armor absorbed damage.')
+                    break
+                
+            elif ESP.armor - lsCannon.dmg <= 0:
+                ESP.armor = 0 
+                break
+                
+            
+            else:
+                ESP.armor -= lsCannon.dmg
+                print('Enemy armor damaged.')
+                break
+                
+                
+                  
+            
+                   
     
     def shield_dmg():
+        while True:
 
-        if enemyShield.density < 0:
-            ESP.armor_sw()
-
-        else:
-            enemyShield.density -= 3.5
+            if enemyShield.density < 0:
+                ESP.armor_sw()
+                break
+    
+            else:
+                if enemyShield.density - lsCannon.dmg <= 0:
+                    enemyShield.density = 0
+                    break
+                else:
+                    enemyShield.density -= lsCannon.dmg
+                    print("Enemy shield damaged...")
+                    break
+                
+            
 
     def dmg_esp():
+        while True:
 
-        if ESP.armor == 0:
-            ESP.health -= 10
-
-        else:
-            ESP.armor_sw()
+            if ESP.armor == 0:
+                
+                if ESP.health - lsCannon.dmg <= 0:
+                    ESP.health = 0
+                    break
+                
+                else:
+                    ESP.health -= lsCannon.dmg
+                    print('Enemy armor destroyed... Raw damage applied.')
+                    break
+    
+            else:
+                print('Enemy armor mitigating damage.')
+                ESP.armor_sw()
+                
 
 class Miner:
 
@@ -289,7 +325,7 @@ class Miner:
     speed = random.randint(3, 7)
 
     async def mining():
-        print("Mining", Positioning.location_name + "...")
+        print("Mining", location_name + "...")
         sleep(2)
         
         
@@ -297,12 +333,15 @@ class Miner:
         
         if Inv.m_one <= 0:
             Inv.m_one = 0
+            pass
             
         if Inv.m_two <= 0:
             Inv.m_two = 0
+            pass
             
         if Inv.m_three <= 0:
             Inv.m_three = 0
+            pass
 
         for n in range(8):
             
@@ -321,7 +360,7 @@ class Miner:
                 else:
                     Inv.m_one += Miner.strength
                     
-                print(Inv.m_one, Positioning.location.materials_name[0], "collected.")
+                print(Inv.m_one, location.materials_name[0], "collected.")
 
                 await asyncio.sleep(Miner.speed)
 
@@ -334,7 +373,7 @@ class Miner:
                 else:
                     Inv.m_two += Miner.strength
 
-                print(Inv.m_two, Positioning.location.materials_name[1], "collected.")
+                print(Inv.m_two, location.materials_name[1], "collected.")
 
                 await asyncio.sleep(Miner.speed)
 
@@ -347,7 +386,7 @@ class Miner:
                 else:
                     Inv.m_three += Miner.strength
 
-                print(Inv.m_three, Positioning.location.materials_name[2], "collected.")
+                print(Inv.m_three, location.materials_name[2], "collected.")
             
                 await asyncio.sleep(Miner.speed)
     
@@ -371,30 +410,70 @@ class PS:
     in_combat = False
 
     def shield_dmg():
+        while True:
 
-        if Shield1.density <= 0:
-            PS.armor_sw()
-
-        else:
-            Shield1.density -= 3.5
+            if Shield1.density <= 0:
+                print("Shield cell empty.")
+                PS.armor_sw()
+    
+            else:
+                if Shield1.density - lsCannon.dmg <= 0:
+                    Shield1.density = 0
+                    break
+                else:
+                    Shield1.density -= lsCannon.dmg
+                    print("Shield wall damaged.")
 
     def armor_sw():
+        while True:
+            
+            # 45% chance to mitigate some damage with armor. 
         
-        # 45% to mitigate some damage with armor. 
-
-        if random.randint(1, 100) == 45:
-            PS.armor -= random.randrange(2, 3)
-        else:
-            PS.armor -= random.randrange(4, 10)
+            if random.randint(1, 100) <= 45:
+                if PS.armor - random.randrange(2, 3) <= 0:
+                    PS.armor = 0
+                    break
+                else:
+                    PS.armor -= random.randrange(2, 3)
+                    print("Armor has negated damage, somewhat...")
+                    break
+                
+            elif PS.armor - lsCannon.dmg <= 0:
+                PS.armor = 0
+                break
+                
+            else:
+                PS.armor -= lsCannon.dmg
+                print("Armor damaged...")
+                break
 
     def dmg_esp():
-
-        if ESP.armor == 0:
-            ESP.health -= 10
-
-        else:
-            ESP.armor_sw()
-            
+        
+        while True:
+        
+            if random.randint(1, 100) <= 70:
+                
+                if ESP.armor == 0: # If enemy armor is zero...
+                    
+                    if ESP.health - lsCannon.dmg <= 0: ## Check for death hit...
+                        ESP.health = 0
+                        break
+                    
+                    else:
+                        ESP.health -= lsCannon.dmg # Or issue damage.
+                        print("Enemy armor shredded... Raw damage given.")
+                        break
+        
+                else:
+                    ESP.armor_sw()
+                    break
+                    
+                    
+            else:
+                print("You missed your shot.")
+                break
+    
+        
     with shelve.open('saves/ship') as shipsave:
         shipsave['health'] = health
         shipsave['shield'] = shield.density
@@ -403,6 +482,12 @@ class PS:
         upship = {'health': health, 'shield': shield, 'armor': armor, 'incombat': in_combat }
         shipsave.update(upship)
 
+    def saveloc():
+        
+        global location
+        global location_name
+        
+        
 
 class Shop:
 
@@ -503,13 +588,55 @@ class CIT:
     off_sp = [ 'sp.a', 'cat',  'aim' ] # cat = capture
     defense = ['sh']
     
+    def attacked():
+        
+        while True:
+            
+            if random.randint(1, 100) <= 70:
+                
+                if PS.armor == 0:
+                    
+                    if PS.health - lsCannon.dmg <= 0:
+                        PS.health = 0
+                        break
+                    
+                    else:
+                        PS.health -= lsCannon.dmg
+                        print("Player armor shredded... Raw damage taken.")
+                        break
+
+                else:
+                    PS.armor_sw()
+                    break
+            
+            else:
+                print('The enemy missed their shot.')
+                break
+                
+        
+    
     def attacking():
         while True:
+            
+            if ESP.health == 0:
+                print('Enemy defeated.')
+                break
+            
+            elif PS.health == 0:
+                print('You have been defeated.')
+                break
+            
+            print('E+:', ESP.armor)
+            print('E++:', ESP.health)
+            print('Es:', ESP.shield.density)
+            print('Y+:', PS.armor)
+            print('Y++:', PS.health)
+            print('Ys:', PS.shield.density)
             
             CITF = input("CIT: ")
             
             if CITF == CIT.offense[0]:
-                ESP.dmg_esp()
+                PS.dmg_esp()
             
             if CITF == CIT.offense[2]:
                 break
@@ -522,12 +649,11 @@ class CIT:
                     ESP.health -= 30
                 else: 
                     pass
-    
                 
-    async def spawn():
-        if random.randrange(1, 100) == 45:
+    def spawn():
+        if random.randrange(1, 100) <= 45:
             ESP.engaged = True
-            
+                
         if ESP.engaged == True:
             CIT.attacking()
         
@@ -536,12 +662,16 @@ class CIT:
 
 class IT:
 
+    global location 
+    global location_name
+    
     # Various commands
 
     utility = [ 'mine', 'scan', 'travel', 'automine', 'sell' ]
     shop = [ 'shop', '++', 'shi+', 'inv+', '$$$+', '$R' ]
     diag = [ 'health', 'shield', 'inventory' ]
     money = [ 'wallet', 'deposit' ]
+
 
     command = ""
 
@@ -560,10 +690,14 @@ class IT:
             zyX = input("X, Y: ")
 
             if zyX == str(amplanets.Piscea.coordinates):
-                Positioning.location = Piscea
-                Positioning.location_name = Piscea.name
+                location = Piscea
+                location_name = Piscea.name
                 amplanets.Piscea.arrival()
-                Positioning.position.update(Positioning.position_up)
+                with shelve.open('saves/locatio') as position:
+                    position['planet'] = location
+                    position['pl_name'] = location_name
+                    position_up = {'planet': location, 'pl_name': location_name}
+                    position.update(position_up)
                 CIT.spawn()
                 command = ""
 
@@ -571,11 +705,15 @@ class IT:
                 command = ""
             
             if zyX == (amplanets.Marici.coordinates):
-                Positioning.location = amplanets.Marici
-                Positioning.location_name = amplanets.Marici.name
+                location = amplanets.Marici
+                location_name = amplanets.Marici.name
                 amplanets.Marici.arrival()
-                Positioning.position.update(Positioning.position_up)
-                asyncio.run(CIT.spawn())  
+                with shelve.open('saves/locatio') as position:
+                    position['planet'] = location
+                    position['pl_name'] = location_name
+                    position_up = {'planet': location, 'pl_name': location_name}
+                    position.update(position_up)
+                CIT.spawn()
                 command = ""
             
             else:
