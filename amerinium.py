@@ -1,20 +1,27 @@
-import random
-import os
-import asyncio
-import shelve
+import random, os, asyncio, shelve, time
+import threading as th
+
+
 
 # game files
 
 import amatomic as ama
 import amplanets
 from time import sleep
+import deepinv as di
 
 from amplanets import Piscea
-location = Piscea
-location_name = Piscea.name
 
+if os.path.exists('saves/locatio'):
+    with shelve.open('saves/locatio') as locatio:
+        location = locatio.get('planet')
+        location_name = locatio.get('pl_name')
+
+else:
+    location = Piscea
+    location_name = Piscea.name
     
-    
+
 
 class economy:
 
@@ -29,18 +36,31 @@ class Shield1:
 
     name = "TH DOS 20"
     density = 35
-    d_up = 32
+    deployed = False
+    battery = 3
     surface = "ribbed, transient"
+    
+    async def recharge():
+        
+        global battery
+        
+        print("Recharging shield battery...", end="\n")
+        for i in range(3):
+            Shield1.battery += 1
+            print("Battery:", Shield1.battery, end="\r")
+            await asyncio.sleep(1)
+        
 
 
 class enemyShield:
 
     name = "TH DOS 20"
     density = 35
-    d_up = 32
+    deployed = False
+    
     surface = "ribbed, transient"
-
-
+    
+    
 class wallet:
 
     name = "Beartech Money Packager"
@@ -49,26 +69,19 @@ class wallet:
     process_delay = random.randint(3, 5)
     money = 0 
     bank = 0
+        
+    with shelve.open('saves/shmoney', 'c') as shmoney:
+        shmoney['size'] = size
+        shmoney['process_delay'] = process_delay
+        shmoney['money'] = money
+        shmoney['bank'] = bank
     
-    if os.path.exists('saves/shmoney'):
-        with shelve.open('saves/shmoney') as shmoney:
-            size = shmoney['size']
-            process_delay = shmoney['process_delay'] 
-            money = shmoney['money']
-            bank = shmoney['bank'] 
-    else:
-        with shelve.open('saves/shmoney') as shmoney:
-            shmoney['size'] = size
-            shmoney['process_delay'] = process_delay
-            shmoney['money'] = money
-            shmoney['bank'] = bank
     
-    if os.path.exists('saves/shmoney'): 
-        with shelve.open('saves/shmoney') as shmoney:
-            size = 10 + shmoney.get('size')
-            process_delay = random.randint(3, 5)
-            money = 0 + shmoney.get('money')
-            bank = 0 + shmoney.get('bank')
+    with shelve.open('saves/shmoney') as shmoney:
+        size = 10 + shmoney.get('size')
+        process_delay = random.randint(3, 5)
+        money = 0 + shmoney.get('money')
+        bank = 0 + shmoney.get('bank')
     
        
     async def deposit():
@@ -97,13 +110,74 @@ class lsCannon:
     dmg = random.randrange(2, 10)
     crit = random.randrange(14, 23)
     price = 40
+    ammo = 6
 
 
     # Super Mode, needs locked_on = True
     locked_on = False
     super_dmg = random.randrange(18, 30)
     super_crit = random.randrange(18, 48)
+    super_ammo = 4
     super_price = 60
+    
+    
+    async def recharge():
+        
+        print("Recharging shield battery...", end="\n")
+        
+        for i in range(4):
+            
+            lsCannon.super_ammo += 1
+            print("PS(s):", lsCannon.super_ammo, end="\r")
+            await asyncio.sleep(1)
+            
+    async def powershot():
+        
+        if lsCannon.super_ammo > 0:
+            
+            if lsCannon.locked_on == True:
+                
+                lsCannon.super_ammo -= 1
+                
+                print("Deploying round...")
+                await asyncio.sleep(2)
+                
+                if ESP.armor - lsCannon.super_dmg == 0:
+                    ESP.armor = 0
+                    print("E++: -" +  str(lsCannon.super_dmg))
+                    await asyncio.sleep(2)
+                    
+                elif ESP.armor <= 0: 
+                    ESP.armor = 0
+                    ESP.health -= lsCannon.super_dmg
+                    print("E++: -" +  str(lsCannon.super_dmg))
+                    await asyncio.sleep(2)
+                
+                if ESP.health - lsCannon.super_dmg == 0:
+                    ESP.health = 0
+                    print("E++: -" +  str(lsCannon.super_dmg))
+                    await asyncio.sleep(2)
+                    
+                else:
+                    print("E+: -" +  str(lsCannon.super_dmg))
+                    ESP.armor -= lsCannon.super_dmg
+                    await asyncio.sleep(2)
+                
+                lsCannon.locked_on = False
+                
+                pass
+            
+            else:
+                
+                print("PS: OFFLINE")
+                await asyncio.sleep(2)
+                pass
+            
+        else:
+            
+            print("Out of ammo...")
+            await asyncio.sleep(2)
+            pass
 
 
 class Inv:
@@ -113,10 +187,6 @@ class Inv:
 
 
     # Defining
-
-    # location.materials[0] = 0
-    # location.materials[1] = 0
-    # location.materials[2] = 0
     
     sell_rate = 1
     
@@ -124,43 +194,34 @@ class Inv:
     # Otherwise, create the save file by storing quantative variables into the database.
     # Then, if the save file exists intact, concatenate the data into memory to display the current amount of materials you're mining.
     
-    if os.path.exists('saves/invsave'):
-            
-        with shelve.open('saves/invsave') as invsh:
-            
-                location.materials[0] = invsh['Material 0 Count']
-                location.materials[1] = invsh['Material 1 Count']
-                location.materials[2] = invsh['Material 2 Count']
-                sell_rate = invsh['sell_rate']
-    else:
+   # if os.path.exists('saves/gems'):
+   
+    with shelve.open('saves/gems', 'c') as gems:
         
-        with shelve.open('saves/invsave') as invsh:
-            
-            invsh['Material 0 Count'] = location.materials[0]
-            invsh['Material 1 Count'] = location.materials[1]
-            invsh['Material 2 Count'] = location.materials[2]
-            invsh['sell_rate'] = sell_rate
-            
-    if os.path.exists('saves/invsave'):
-        
-        with shelve.open('saves/invsave') as invsh:   
-             
-            m_one = invsh.get('Material 0 Count')
-            m_two = invsh.get('Material 1 Count')
-            m_three = invsh.get('Material 2 Count')
-            sell_rate = invsh.get('sell_rate')
+        mtn = [ location.materials_name[0], location.materials_name[1], location.materials[2] ]
+        mt = [ location.materials[0], location.materials[1], location.materials[2] ]
+        gems[str(mtn[0])] = mt[0]
+        gems[str(mtn[1])] = mt[1]
+        gems[str(mtn[2])] = mt[2]
+        gems['sell_rate'] = sell_rate
+   
+        m_one = gems.get(str(mtn[0]))
+        m_two = gems.get(str(mtn[1]))
+        m_three = gems.get(str(mtn[2]))
+        sell_rate = gems.get('sell_rate')
+    
         
     async def insave():
         
         # Update inventory database with new information.
         
-        with shelve.open('saves/invsave') as invsh:
+        with shelve.open('saves/gems') as gems:
             
-            invchange = { 'Material 0 Count':int(Inv.m_one), 
-                         'Material 1 Count':int(Inv.m_two), 
-                         'Material 2 Count':int(Inv.m_three) }
+            invchange = { str(Inv.mtn[0]): int(Inv.m_one), 
+                        str(Inv.mtn[1]): int(Inv.m_two), 
+                         str(Inv.mtn[2]): int(Inv.m_three) }
             
-            invsh.update(invchange)
+            gems.update(invchange)
 
     
     
@@ -174,7 +235,7 @@ class Inv:
             print("ÆFLX:", ama.Amerinium.flux)
             
             # For every number of materials that player possesses, that material is sold for its price and depleted by 1.
-
+ 
             for i in Inv.m_one, Inv.m_two, Inv.m_three:
     
 
@@ -189,7 +250,6 @@ class Inv:
                     else:
                         
                         print(location.materials_name[0] + ":", "-" + str(Inv.sell_rate), "from", str(Inv.m_one)) # "THC Crystals: -3 from 5"
-                        
                         Inv.m_one -= Inv.sell_rate
                         wallet.money += economy.price_one
                         print("財布:", "Æ" + str(wallet.money))
@@ -204,6 +264,7 @@ class Inv:
                         Inv.m_two -= Inv.sell_rate
                         wallet.money += economy.price_two
                         print("財布:", "Æ" + str(wallet.money))
+                        
 
                 elif i == Inv.m_three:
                     
@@ -215,13 +276,16 @@ class Inv:
                         Inv.m_three -= Inv.sell_rate
                         wallet.money += economy.price_three
                         print("財布:", "Æ" + str(wallet.money))
+                        
                 
                 if Inv.m_one + Inv.m_two + Inv.m_three == 0:
                     print("Inventory empty... Exiting.")
                     sleep(1)
                     break
-
+                Inv.gems.close()
                 await asyncio.sleep(wallet.process_delay)
+                
+                
 
             if wallet.money == wallet.size:
                 
@@ -245,6 +309,7 @@ class ESP:
     detected = False
     engaged = False
     spawned = False
+    armorblock = 38
 
     
 
@@ -252,28 +317,36 @@ class ESP:
         
         while True:
 
-            if random.randint(1, 100) <= 45:
+            if random.randint(1, 100) <= ESP.armorblock:
             
                 if ESP.armor - random.randrange(2, 4) <= 0:
                     ESP.armor = 0
+                    print('E+: DAMAGE NEGATED')
+                    await asyncio.sleep(2)
                     break
                     
                 
                 else:
                     ESP.armor -= random.randrange(2, 4)
-                    print('Enemy armor absorbed damage.')
+                    
+                    print('E+: DAMAGE NEGATED')
                     await asyncio.sleep(2)
+                    
                     break
                 
             elif ESP.armor - lsCannon.dmg <= 0:
                 ESP.armor = 0 
+                print('E+: -' + str(lsCannon.dmg))
+                await asyncio.sleep(2)
+                
                 break
                 
             
             else:
                 ESP.armor -= lsCannon.dmg
-                print('Enemy armor damaged.')
+                print('E+: -' + str(lsCannon.dmg))
                 await asyncio.sleep(2)
+                
                 break
                 
                 
@@ -288,15 +361,17 @@ class ESP:
                 ESP.armor_sw()
                 break
     
-            else:
-                if enemyShield.density - lsCannon.dmg <= 0:
+            elif enemyShield.density - lsCannon.dmg <= 0:
                     enemyShield.density = 0
-                    break
-                else:
-                    enemyShield.density -= lsCannon.dmg
-                    print("Enemy shield damaged...")
+                    print("Es: -" + str(lsCannon.dmg))
                     await asyncio.sleep(2)
                     break
+                
+            else:
+                enemyShield.density -= lsCannon.dmg
+                print("Es: -" + str(lsCannon.dmg))
+                await asyncio.sleep(2)
+                break
                 
             
 
@@ -307,15 +382,17 @@ class ESP:
                 
                 if ESP.health - lsCannon.dmg <= 0:
                     ESP.health = 0
+                    print('E++: -' + str(lsCannon.dmg))
                     break
                 
                 else:
                     ESP.health -= lsCannon.dmg
-                    print('Enemy armor destroyed... Raw damage applied.')
+                    print('E++: -' + str(lsCannon.dmg))
+                    await()
                     break
     
             else:
-                print('Enemy armor mitigating damage.')
+                print('E+: MINIMIZED DAMAGE')
                 await asyncio.sleep(2)
                 asyncio.run(ESP.armor_sw())
                 
@@ -416,27 +493,37 @@ class PS:
     health = 30
     armor = 20
     shield = Shield1()
+    shield_deptime = 10
     inventory = Inv()
     weapon = lsCannon()
     in_combat = False
+    armorblock = 45
 
     async def shield_dmg():
-        while True:
-
-            if Shield1.density <= 0:
-                print("Shield cell empty.")
-                sleep(2)
-                asyncio.run(PS.armor_sw())
-    
-            else:
-                if Shield1.density - lsCannon.dmg <= 0:
-                    Shield1.density = 0
-                    break
-                else:
-                    Shield1.density -= lsCannon.dmg
-                    print("Shield wall damaged.")
+        
+            while PS.shield.deployed == True:
+                
+                if Shield1.density <= 0:
+                    print("Shield too weak to function.")
+                    PS.shield.deployed = False
                     await asyncio.sleep(2)
-                    break
+                    await PS.armor_sw()
+        
+                else:
+                    if Shield1.density - lsCannon.dmg <= 0:
+                        Shield1.density = 0
+                        break
+                    
+                    elif Shield1.battery > 0:
+                        Shield1.density -= lsCannon.dmg
+                        Shield1.battery -= 1
+                        print("Shield wall damaged.")
+                        await asyncio.sleep(2)
+                        break
+                    
+                    else:
+                        PS.shield.deployed = False
+                        break
 
     async def armor_sw():
         
@@ -444,13 +531,13 @@ class PS:
             
             # 45% chance to mitigate some damage with armor. 
         
-            if random.randint(1, 100) <= 45:
+            if random.randint(1, 100) <= PS.armorblock:
                 if PS.armor - random.randrange(2, 3) <= 0:
                     PS.armor = 0
                     break
                 else:
                     PS.armor -= random.randrange(2, 3)
-                    print("Armor has negated damage, somewhat...")
+                    print("Y+: MINIMIZED DAMAGE")
                     await asyncio.sleep(2)
                     break
                 
@@ -460,7 +547,8 @@ class PS:
                 
             else:
                 PS.armor -= lsCannon.dmg
-                print("Armor damaged...")
+                
+                print("Y+: -" + str(lsCannon.dmg))
                 await asyncio.sleep(2)
                 break
 
@@ -478,17 +566,21 @@ class PS:
                     
                     else:
                         ESP.health -= lsCannon.dmg # Or issue damage.
-                        print("Enemy armor shredded... Raw damage given.")
+                        print("E++: -" + str(lsCannon.dmg))
                         await asyncio.sleep(2)
                         break
         
                 else:
-                    await ESP.armor_sw()
-                    break
+                    if PS.shield.deployed == True:
+                        await PS.shield_dmg()
+                        break
+                    else:
+                        await ESP.armor_sw()
+                        break
                     
                     
             else:
-                print("You missed your shot.")
+                print("Y:::MISFIRE:::Y")
                 sleep(2)
                 break
     
@@ -605,10 +697,12 @@ class Shop:
         
         
 class CIT:
+    
+    # Combat interface.
 
     offense = [ 'attack', 'scan', 'ff', 'ps' ]
     off_sp = [ 'sp.a', 'cat',  'aim' ] # cat = capture
-    defense = ['sh']
+    defense = [ 'sh', 'rcs', 'rcps' ]  
     
     async def attacked():
         
@@ -620,11 +714,13 @@ class CIT:
                     
                     if PS.health - lsCannon.dmg <= 0:
                         PS.health = 0
+                        print("Y++: -" + lsCannon.dmg)
+                        await asyncio.sleep(2)
                         break
                     
                     else:
                         PS.health -= lsCannon.dmg
-                        print("Player armor shredded... Raw damage taken.")
+                        print("Y++: -" + lsCannon.dmg)
                         await asyncio.sleep(2)
                         break
 
@@ -633,69 +729,131 @@ class CIT:
                     break
             
             else:
-                print('The enemy missed their shot.')
+                print('E:::MISFIRE:::E')
                 await asyncio.sleep(2)
                 break
                 
         
     
-    def attacking():
-        while True:
+    async def attacking():
+        
+        while PS.in_combat == True:
             
-            if ESP.health <= 0:
-                print('Enemy defeated.')
-                ESP.health = 70
-                ESP.armor = 20
-                asyncio.run(ESP.enshipsaving())
-                PS.health = 70
-                PS.armor = 20
-                asyncio.run(PS.shipsaving())
-                break
-            
-            elif PS.health <= 0:
-                print('You have been defeated.')
-                ESP.health = 70
-                ESP.armor = 20
-                asyncio.run(ESP.enshipsaving())
-                PS.health = 70
-                PS.armor = 20
-                asyncio.run(PS.shipsaving())
-                break
-            
-            print('E+:', ESP.armor)
-            print('E++:', ESP.health)
-            print('Es:', ESP.shield.density)
-            print('Y+:', PS.armor)
-            print('Y++:', PS.health)
-            print('Ys:', PS.shield.density)
-            
-            CITF = input("CIT: ")
-            
-            if CITF == CIT.offense[0]:
-                asyncio.run(PS.dmg_esp())
-                asyncio.run(CIT.attacked())
-            
-            if CITF == CIT.offense[2]:
-                break
-            
-            if CITF == CIT.off_sp[2]:
-                lsCannon.locked_on = True
+                if ESP.health <= 0:
+                    print('e:kill')
+                    PS.in_combat = False
+                    ESP.health = 30
+                    ESP.armor = 20
+                    await ESP.enshipsaving()
+                    PS.health = 30
+                    PS.armor = 20
+                    PS.shield.battery = 3
+                    await PS.shipsaving()
+                    break
                 
-            if CITF == CIT.offense[3]:
-                if lsCannon.locked_on == True:
-                    ESP.health -= lsCannon.super_dmg
-                    lsCannon.locked_on = False
-                else:
-                    print("Not locked on.")
-                    pass
-            
+                if PS.health <= 0:
+                    print('y:kill')
+                    PS.in_combat = False
+                    ESP.health = 30
+                    ESP.armor = 20
+                    await ESP.enshipsaving()
+                    PS.health = 30
+                    PS.armor = 20
+                    PS.shield.battery = 3
+                    await PS.shipsaving()
+                    break
                 
-    def spawn():
-        #if random.randrange(1, 100) <= 45:
-        ESP.engaged = True
+                print('E+:', ESP.armor)
+                print('E++:', ESP.health)
+                print('Es:', ESP.shield.density)
+                print('Y+:', PS.armor)
+                print('Y++:', PS.health)
+                print('Ys:', PS.shield.density)
+                
+                CITF = input("CIT: ")
+                
+                if CITF == CIT.offense[0]:
+                    await PS.dmg_esp()
+                    await CIT.attacked()
+                
+                elif CITF == CIT.offense[2]:
+                    break
+                
+                elif CITF == CIT.off_sp[2]:
+                    print("Aiming special cannon...")
+                    sleep(2)
+                    while location.rings == True:
+                        
+                        flip = [ 'a', 'b', 'c' ]
+                        
+                        if flip == flip[1:2]: # if coin lands on side b
+                            
+                            if PS.shield.deployed == True: # and the shield is deployed
+                                if PS.shield.health > 0: # and the shield health is above zero
+                                    PS.shield.health -= 8 # remove five health points from the shield
+                                    
+                                    print("Debris from the rings of", str(location.name), "have damaged your ship.")
+                                    await asyncio.sleep(2)
+                                    print("Ys: -2")
+                                    await asyncio.sleep(2)
+                                    
+                            elif PS.armor > 0:
+                                PS.armor -= 3
+                                
+                                print("Debris from the rings of", str(location.name), "have damaged your ship.")
+                                await asyncio.sleep(2)
+                                
+                                print("Y+: -2")
+                                await asyncio.sleep(2)
+                            
+                            else:
+                                PS.health -= 5
+                                
+                                print("Debris from the rings of", str(location.name), "have damaged your ship.")
+                                await asyncio.sleep(2)
+                                
+                                print("Y++: -2")
+                                await asyncio.sleep(2)
+                            
+                            print("Cannon not charged...")
+                            await asyncio.sleep(2)
+                            
+                            break
+                        
+                        else:
+                            lsCannon.locked_on = True
+                            print("Locked on...")
+                            await asyncio.sleep(2)
+                            break
+                    
+                elif CITF == CIT.offense[3]:
+                    await lsCannon.powershot()
+                    
+                elif CITF == CIT.defense[0]:
+                    print('Deploying shield...')
+                    await asyncio.sleep(2)
+                    if PS.shield.battery > 0:
+                        PS.shield.battery -= 1
+                        PS.shield.deployed = True
+                        pass
+                    
+                    else:
+                        print('Shield battery depleted...')
+                        pass
+                
+                elif CITF == CIT.defense[1]:
+                    await Shield1.recharge()
+                    await CIT.attacked()
+                                
+                       
+    async def spawn():
+        if random.randrange(1, 100) <= 45:
+            ESP.engaged = True
+            PS.in_combat = True
+            await PS.shipsaving()
                 
         if ESP.engaged == True:
-            CIT.attacking()
+            await CIT.attacking()
         
         else:
             pass
@@ -707,132 +865,147 @@ class IT:
     
     # Various commands
 
-    utility = [ 'mine', 'scan', 'travel', 'automine', 'sell' ]
-    shop = [ 'shop', '++', 'shi+', 'inv+', '$$$+', '$R' ]
-    diag = [ 'health', 'shield', 'inventory' ]
-    money = [ 'wallet', 'deposit' ]
+    
 
 
-    command = ""
+    async def command_deck():
+        
+        utility = [ 'mine', 'scan', 'travel', 'automine', 'sell' ]
+        shop = [ 'shop', '++', 'shi+', 'inv+', '$$$+', '$R' ]
+        diag = [ 'health', 'shield', 'inventory' ]
+        money = [ 'wallet', 'deposit' ]
+        
+        command = ""
 
-    while command != "kill":
+        while command != "kill":
 
-        command = input("""司令官: """)
+            command = input("""\n司令官: """)
 
-        while command == utility[0]:
-            asyncio.run(Miner.mining())
-            asyncio.run(Inv.insave())
-            CIT.spawn()           
-            command = ""
-
-
-        while command == utility[2]:
-            zyX = input("X, Y: ")
-
-            if zyX == str(amplanets.Piscea.coordinates):
-                location = Piscea
-                location_name = Piscea.name
-                amplanets.Piscea.arrival()
-                with shelve.open('saves/locatio') as position:
-                    position['planet'] = location
-                    position['pl_name'] = location_name
-                    position_up = {'planet': location, 'pl_name': location_name}
-                    position.update(position_up)
-                CIT.spawn()
+            while command == utility[0]: # Mining
+                await di.qdb.gemstones()
+                await asyncio.sleep(1)
+                await Miner.mining()
+                await Inv.insave()
+                await di.qdb.gemstones()
+                await CIT.spawn()           
                 command = ""
 
+            
+            while command == utility[2]: # Travel
+                zyX = input("X, Y: ")
+
+                if zyX == str(amplanets.Piscea.coordinates):
+                    location = Piscea
+                    location_name = Piscea.name
+                    amplanets.Piscea.arrival()
+                    
+                    # Quickly save the location and location name into the database file.
+                    
+                    with shelve.open('saves/locatio') as position:
+                        position['planet'] = location
+                        position['pl_name'] = location_name
+                        position_up = {'planet': location, 'pl_name': location_name}
+                        position.update(position_up)
+                    await CIT.spawn()
+                    command = ""
+
+                else:
+                    command = ""
+                
+                if zyX == (amplanets.Marici.coordinates):
+                    location = amplanets.Marici
+                    location_name = amplanets.Marici.name
+                    amplanets.Marici.arrival()
+                    with shelve.open('saves/locatio') as position:
+                        position['planet'] = location
+                        position['pl_name'] = location_name
+                        position_up = { 'planet': location, 'pl_name': location_name }
+                        position.update(position_up)
+                    await CIT.spawn()
+                    command = ""
+                
+                else:
+                    await CIT.spawn()
+                    command = ""
+
+            while command == utility[4]: # Selling
+                await Inv.sell()
+                wallet.walsave()
+                await Inv.insave()
+                di.qdb.gemstones()
+                await CIT.spawn()  
+                command = ""
+
+            while command == diag[0]: # Print health information.
+                
+                print("Health:", PS.health)
+                command = ""
+
+            while command == diag[1]: # Print shield information.
+                
+                print("Shield:", PS.shield.density)
+                command = ""
+
+            while command == diag[2]: # Print inventory
+                await di.ndb.displayinv()
+                command = ""
+            
+            while command == money[1]:
+                await wallet.deposit()
+                wallet.walsave()
+                command = ""
+
+
+            # Shop Commands
+
+            while command == shop[0]:
+                print('Logging on...')
+                sleep(2)
+                Shop.online()
+                Shop.listing()
+                
+                command = ""
+
+
+            while command == shop[1]:
+                print("Upgrading", PS.name + "'s", 'health')
+                Shop.health_upgrade()
+                
+                command = ""
+
+            while command == shop[2]:
+                print("Upgrading", Shield1.name)
+                Shop.shield_upgrade()
+                
+                command = ""
+
+            while command == shop[3]:
+                print("Upgrading inventory...")
+                Shop.inv_upgrade()
+                
+                command = ""
+
+            while command == shop[4]:
+                print("Upgrading", wallet.name)
+                Shop.money_upgrade()
+                
+                command = ""
+                
+            while command == shop[5]:
+                print("Upgrading", Inv.name, "sell rate.")
+                Shop.sell_up()
+                
+                command = ""
+
+            while command == "clear":
+                os.system('clear')
+                
+                command = ""
+                
             else:
-                command = ""
-            
-            if zyX == (amplanets.Marici.coordinates):
-                location = amplanets.Marici
-                location_name = amplanets.Marici.name
-                amplanets.Marici.arrival()
-                with shelve.open('saves/locatio') as position:
-                    position['planet'] = location
-                    position['pl_name'] = location_name
-                    position_up = {'planet': location, 'pl_name': location_name}
-                    position.update(position_up)
-                CIT.spawn()
-                command = ""
-            
-            else:
-                CIT.spawn()
-                command = ""
+                pass
 
-        while command == utility[4]:
-            asyncio.run(Inv.sell())
-            wallet.walsave()
-            asyncio.run(Inv.insave())
-            CIT.spawn()  
-            command = ""
-
-        while command == diag[0]:
-            print("Health:", PS.health)
-            CIT.spawn()
-            command = ""
-
-        while command == diag[1]:
-            print("Shield:", PS.shield.density)
-            CIT.spawn()
-            command = ""
-
-        while command == money[1]:
-            asyncio.run(wallet.deposit())
-            wallet.walsave()
-            CIT.spawn()
-            command = ""
-
-
-        # Shop Commands
-
-        while command == shop[0]:
-            print('Logging on...')
-            sleep(2)
-            Shop.online()
-            Shop.listing()
-            
-            command = ""
-
-
-        while command == shop[1]:
-            print("Upgrading", PS.name + "'s", 'health')
-            Shop.health_upgrade()
-            
-            command = ""
-
-        while command == shop[2]:
-            print("Upgrading", Shield1.name)
-            Shop.shield_upgrade()
-            
-            command = ""
-
-        while command == shop[3]:
-            print("Upgrading inventory...")
-            Shop.inv_upgrade()
-            
-            command = ""
-
-        while command == shop[4]:
-            print("Upgrading", wallet.name)
-            Shop.money_upgrade()
-            
-            command = ""
-            
-        while command == shop[5]:
-            print("Upgrading", Inv.name, "sell rate.")
-            Shop.sell_up()
-            
-            command = ""
-
-        while command == "clear":
-            os.system('clear')
-            
-            command = ""
-            
-        else:
-            pass
-
+asyncio.run(IT.command_deck())
 
 
 

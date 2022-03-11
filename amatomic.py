@@ -1,6 +1,9 @@
+from argparse import MetavarTypeHelpFormatter
 import random
 from time import sleep
 import asyncio
+import shelve
+
 class Amerinium:
 
     name = "Amerinium"
@@ -150,3 +153,6 @@ class Junk:
     name = "Space Junk"
     cost = 5
     quantity = 0
+
+
+    
