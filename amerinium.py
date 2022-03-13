@@ -123,7 +123,8 @@ class lsCannon:
     
     async def recharge():
         
-        print("Recharging shield battery...", end="\n")
+        print("(S)RC Initialized", end="\n")
+        await asyncio.sleep(1)
         
         for i in range(4):
             
@@ -131,53 +132,104 @@ class lsCannon:
             print("PS(s):", lsCannon.super_ammo, end="\r")
             await asyncio.sleep(1)
             
-    async def powershot():
+    async def saim():
         
-        if lsCannon.super_ammo > 0:
+        print("Aiming special cannon...")
+        await asyncio.sleep(2)
+        
+        # If rings around the planet exist, they can damage the ship. and stop the cannon's charge.
+        while location.rings == True:
+                        
+            flip = [ 'a', 'b', 'c' ]
             
-            if lsCannon.locked_on == True:
+            if random.randint(1, 100) <= 25: # if coin lands on side b or c
                 
-                lsCannon.super_ammo -= 1
-                
-                print("Deploying round...")
-                await asyncio.sleep(2)
-                
-                if ESP.armor - lsCannon.super_dmg == 0:
-                    ESP.armor = 0
-                    print("E++: -" +  str(lsCannon.super_dmg))
-                    await asyncio.sleep(2)
+                if PS.shield.deployed == True: # and the shield is deployed
+                    if PS.shield.health > 0: # and the shield health is above zero
+                        PS.shield.health -= 8 # remove five health points from the shield
+                        
+                        print("Debris from the rings of", str(location.name), "have damaged your ship.")
+                        await asyncio.sleep(2)
+                        print("Ys: -2")
+                        await asyncio.sleep(2)
+                        print("Cannon not charged...")
+                        await asyncio.sleep(2)
+                        break
+                        
+                    elif PS.armor > 0:
+                        PS.armor -= 3
+                        
+                        print("Debris from the rings of", str(location.name), "have damaged your ship.")
+                        await asyncio.sleep(2)
+                        
+                        print("Y+: -2")
+                        await asyncio.sleep(2)
+                        
+                        print("Cannon not charged...")
+                        await asyncio.sleep(2)
+                        break
                     
-                elif ESP.armor <= 0: 
-                    ESP.armor = 0
-                    ESP.health -= lsCannon.super_dmg
-                    print("E++: -" +  str(lsCannon.super_dmg))
+                    else:
+                        PS.health -= 5
+                        
+                        print("Debris from the rings of", str(location.name), "have damaged your ship.")
+                        await asyncio.sleep(2)
+                        
+                        print("Y++: -2")
+                        await asyncio.sleep(2)
+                        
+                        print("Cannon not charged...")
+                        await asyncio.sleep(2)
+                        break
+                else:
+                    lsCannon.locked_on = True
+                    print("Locked on...")
                     await asyncio.sleep(2)
+                    break
+            
+                    
+            
+                   
+        else:
+            while location.rings == False:
                 
-                if ESP.health - lsCannon.super_dmg == 0:
-                    ESP.health = 0
-                    print("E++: -" +  str(lsCannon.super_dmg))
+                flip = [ 'a', 'b', 'c' ]
+            
+            if random.choice(flip) == flip[0]: # if coin lands on side b or c
+                
+                if PS.shield.deployed == True: # and the shield is deployed
+                    if PS.shield.health > 0: # and the shield health is above zero
+                        await PS.shield_dmg()
+
+                        print("Cannon not charged...")
+                        await asyncio.sleep(2)
+                        
+                elif PS.armor > 0:
+                    PS.attacked() 
+                    print("Cannon not charged...")
                     await asyncio.sleep(2)
                     
                 else:
-                    print("E+: -" +  str(lsCannon.super_dmg))
-                    ESP.armor -= lsCannon.super_dmg
+                    PS.attacked() 
+                    print("Cannon not charged...")
                     await asyncio.sleep(2)
                 
-                lsCannon.locked_on = False
-                
-                pass
-            
-            else:
-                
-                print("PS: OFFLINE")
+            elif random.choice(flip) == flip[2]:
+                lsCannon.locked_on = True
+                print("Locked on...")
                 await asyncio.sleep(2)
-                pass
+                    
+                
+               
             
-        else:
-            
-            print("Out of ammo...")
-            await asyncio.sleep(2)
-            pass
+                print("Cannon not charged...")
+                await asyncio.sleep(2)
+                
+            else:
+                PS.attacked() 
+                print("Cannon not charged...")
+                await asyncio.sleep(2)
+    
 
 
 class Inv:
@@ -310,6 +362,9 @@ class ESP:
     engaged = False
     spawned = False
     armorblock = 38
+    
+    if health <= 0:
+        health = 0
 
     
 
@@ -321,7 +376,7 @@ class ESP:
             
                 if ESP.armor - random.randrange(2, 4) <= 0:
                     ESP.armor = 0
-                    print('E+: DAMAGE NEGATED')
+                    print('E+: -+', str(ESP.armor - random.randrange(2, 4)))
                     await asyncio.sleep(2)
                     break
                     
@@ -329,7 +384,7 @@ class ESP:
                 else:
                     ESP.armor -= random.randrange(2, 4)
                     
-                    print('E+: DAMAGE NEGATED')
+                    print('E+: -+', str(ESP.armor - random.randrange(2, 4)))
                     await asyncio.sleep(2)
                     
                     break
@@ -348,11 +403,7 @@ class ESP:
                 await asyncio.sleep(2)
                 
                 break
-                
-                
-                  
-            
-                   
+                             
     
     async def shield_dmg():
         while True:
@@ -381,7 +432,6 @@ class ESP:
             if ESP.armor == 0:
                 
                 if ESP.health - lsCannon.dmg <= 0:
-                    ESP.health = 0
                     print('E++: -' + str(lsCannon.dmg))
                     break
                 
@@ -392,7 +442,7 @@ class ESP:
                     break
     
             else:
-                print('E+: MINIMIZED DAMAGE')
+                print('E+: +-' + str(lsCannon.dmg))
                 await asyncio.sleep(2)
                 asyncio.run(ESP.armor_sw())
                 
@@ -498,13 +548,15 @@ class PS:
     weapon = lsCannon()
     in_combat = False
     armorblock = 45
+    
+    
 
     async def shield_dmg():
         
             while PS.shield.deployed == True:
                 
                 if Shield1.density <= 0:
-                    print("Shield too weak to function.")
+                    print("Ys(v)")
                     PS.shield.deployed = False
                     await asyncio.sleep(2)
                     await PS.armor_sw()
@@ -512,12 +564,14 @@ class PS:
                 else:
                     if Shield1.density - lsCannon.dmg <= 0:
                         Shield1.density = 0
+                        print("Ys: -" + str(lsCannon.dmg))
+                        await asyncio.sleep(2)
                         break
                     
                     elif Shield1.battery > 0:
                         Shield1.density -= lsCannon.dmg
                         Shield1.battery -= 1
-                        print("Shield wall damaged.")
+                        print("Ys: -" + str(lsCannon.dmg))
                         await asyncio.sleep(2)
                         break
                     
@@ -532,12 +586,16 @@ class PS:
             # 45% chance to mitigate some damage with armor. 
         
             if random.randint(1, 100) <= PS.armorblock:
+                
                 if PS.armor - random.randrange(2, 3) <= 0:
                     PS.armor = 0
+                    print('Y+: +-' + str(PS.armor - random.randrange(2, 3)))
+                    await asyncio.sleep(2)
                     break
+            
                 else:
                     PS.armor -= random.randrange(2, 3)
-                    print("Y+: MINIMIZED DAMAGE")
+                    print('Y+: +-' + str(PS.armor - random.randrange(2, 3)))
                     await asyncio.sleep(2)
                     break
                 
@@ -552,7 +610,7 @@ class PS:
                 await asyncio.sleep(2)
                 break
 
-    async def dmg_esp():
+    async def dmg_ps():
         
         while True:
         
@@ -582,6 +640,83 @@ class PS:
             else:
                 print("Y:::MISFIRE:::Y")
                 sleep(2)
+                break
+            
+    async def powershot():
+        
+        if lsCannon.super_ammo > 0:
+            
+            if lsCannon.locked_on == True:
+                
+                lsCannon.super_ammo -= 1
+                
+                print("Deploying super-charged round...")
+                await asyncio.sleep(2)
+                
+                if ESP.armor - lsCannon.super_dmg == 0:
+                    ESP.armor = 0
+                    print("E++: -" +  str(lsCannon.super_dmg))
+                    await asyncio.sleep(2)
+                    
+                elif ESP.armor <= 0: 
+                    ESP.armor = 0
+                    ESP.health -= lsCannon.super_dmg
+                    print("E++: -" +  str(lsCannon.super_dmg))
+                    await asyncio.sleep(2)
+                
+                if ESP.health - lsCannon.super_dmg == 0:
+                    ESP.health = 0
+                    print("E++: -" +  str(lsCannon.super_dmg))
+                    await asyncio.sleep(2)
+                    
+                else:
+                    print("E+: -" +  str(lsCannon.super_dmg))
+                    ESP.armor -= lsCannon.super_dmg
+                    await asyncio.sleep(2)
+                
+                lsCannon.locked_on = False
+                
+                pass
+            
+            else:
+                
+                print("PS: OFFLINE")
+                await asyncio.sleep(2)
+                pass
+            
+        else:
+            
+            print("Out of ammo...")
+            await asyncio.sleep(2)
+            pass
+        
+    async def attacked():
+        
+        while True:
+            
+            if random.randint(1, 100) <= 70:
+                
+                if PS.armor == 0:
+                    
+                    if PS.health - lsCannon.dmg <= 0:
+                        PS.health = 0
+                        print("Y++: -" + lsCannon.dmg)
+                        await asyncio.sleep(2)
+                        break
+                    
+                    else:
+                        PS.health -= lsCannon.dmg
+                        print("Y++: -" + str(lsCannon.dmg))
+                        await asyncio.sleep(2)
+                        break
+
+                else:
+                    await PS.armor_sw()
+                    break
+            
+            else:
+                print('E:::MISFIRE:::E')
+                await asyncio.sleep(2)
                 break
     
     async def shipsaving():    
@@ -704,63 +839,41 @@ class CIT:
     off_sp = [ 'sp.a', 'cat',  'aim' ] # cat = capture
     defense = [ 'sh', 'rcs', 'rcps' ]  
     
-    async def attacked():
-        
-        while True:
-            
-            if random.randint(1, 100) <= 70:
-                
-                if PS.armor == 0:
-                    
-                    if PS.health - lsCannon.dmg <= 0:
-                        PS.health = 0
-                        print("Y++: -" + lsCannon.dmg)
-                        await asyncio.sleep(2)
-                        break
-                    
-                    else:
-                        PS.health -= lsCannon.dmg
-                        print("Y++: -" + lsCannon.dmg)
-                        await asyncio.sleep(2)
-                        break
-
-                else:
-                    await PS.armor_sw()
-                    break
-            
-            else:
-                print('E:::MISFIRE:::E')
-                await asyncio.sleep(2)
-                break
-                
-        
     
+    async def edeath():
+        
+        print('e:kill + 15AME')
+        PS.in_combat = False
+        ESP.health = 30
+        ESP.armor = 20
+        await ESP.enshipsaving()
+        PS.health = 30
+        PS.armor = 20
+        PS.shield.battery = 3
+        await PS.shipsaving()
+            
+    async def ydeath():
+        
+        print('y:kill +- 15AME')
+        PS.in_combat = False
+        ESP.health = 30
+        ESP.armor = 20
+        await ESP.enshipsaving()
+        PS.health = 30
+        PS.armor = 20
+        PS.shield.battery = 3
+        await PS.shipsaving()
+        
     async def attacking():
         
         while PS.in_combat == True:
             
                 if ESP.health <= 0:
-                    print('e:kill')
-                    PS.in_combat = False
-                    ESP.health = 30
-                    ESP.armor = 20
-                    await ESP.enshipsaving()
-                    PS.health = 30
-                    PS.armor = 20
-                    PS.shield.battery = 3
-                    await PS.shipsaving()
+                    await CIT.edeath()
                     break
                 
                 if PS.health <= 0:
-                    print('y:kill')
-                    PS.in_combat = False
-                    ESP.health = 30
-                    ESP.armor = 20
-                    await ESP.enshipsaving()
-                    PS.health = 30
-                    PS.armor = 20
-                    PS.shield.battery = 3
-                    await PS.shipsaving()
+                    await CIT.ydeath()
                     break
                 
                 print('E+:', ESP.armor)
@@ -773,61 +886,17 @@ class CIT:
                 CITF = input("CIT: ")
                 
                 if CITF == CIT.offense[0]:
-                    await PS.dmg_esp()
-                    await CIT.attacked()
+                    await PS.dmg_ps()
+                    await PS.attacked()
                 
                 elif CITF == CIT.offense[2]:
                     break
                 
                 elif CITF == CIT.off_sp[2]:
-                    print("Aiming special cannon...")
-                    sleep(2)
-                    while location.rings == True:
-                        
-                        flip = [ 'a', 'b', 'c' ]
-                        
-                        if flip == flip[1:2]: # if coin lands on side b
-                            
-                            if PS.shield.deployed == True: # and the shield is deployed
-                                if PS.shield.health > 0: # and the shield health is above zero
-                                    PS.shield.health -= 8 # remove five health points from the shield
-                                    
-                                    print("Debris from the rings of", str(location.name), "have damaged your ship.")
-                                    await asyncio.sleep(2)
-                                    print("Ys: -2")
-                                    await asyncio.sleep(2)
-                                    
-                            elif PS.armor > 0:
-                                PS.armor -= 3
-                                
-                                print("Debris from the rings of", str(location.name), "have damaged your ship.")
-                                await asyncio.sleep(2)
-                                
-                                print("Y+: -2")
-                                await asyncio.sleep(2)
-                            
-                            else:
-                                PS.health -= 5
-                                
-                                print("Debris from the rings of", str(location.name), "have damaged your ship.")
-                                await asyncio.sleep(2)
-                                
-                                print("Y++: -2")
-                                await asyncio.sleep(2)
-                            
-                            print("Cannon not charged...")
-                            await asyncio.sleep(2)
-                            
-                            break
-                        
-                        else:
-                            lsCannon.locked_on = True
-                            print("Locked on...")
-                            await asyncio.sleep(2)
-                            break
+                    await lsCannon.saim()
                     
                 elif CITF == CIT.offense[3]:
-                    await lsCannon.powershot()
+                    await PS.powershot()
                     
                 elif CITF == CIT.defense[0]:
                     print('Deploying shield...')
@@ -843,7 +912,11 @@ class CIT:
                 
                 elif CITF == CIT.defense[1]:
                     await Shield1.recharge()
-                    await CIT.attacked()
+                    await PS.attacked()
+                
+                elif CITF == 'clear':
+                    os.system('clear')
+                    pass
                                 
                        
     async def spawn():
@@ -864,8 +937,6 @@ class IT:
     global location_name
     
     # Various commands
-
-    
 
 
     async def command_deck():
@@ -902,10 +973,10 @@ class IT:
                     # Quickly save the location and location name into the database file.
                     
                     with shelve.open('saves/locatio') as position:
-                        position['planet'] = location
-                        position['pl_name'] = location_name
+                        
                         position_up = {'planet': location, 'pl_name': location_name}
                         position.update(position_up)
+                        
                     await CIT.spawn()
                     command = ""
 
@@ -917,8 +988,6 @@ class IT:
                     location_name = amplanets.Marici.name
                     amplanets.Marici.arrival()
                     with shelve.open('saves/locatio') as position:
-                        position['planet'] = location
-                        position['pl_name'] = location_name
                         position_up = { 'planet': location, 'pl_name': location_name }
                         position.update(position_up)
                     await CIT.spawn()
