@@ -12,6 +12,9 @@ import deepinv as di
 
 from amplanets import Piscea
 
+location = Piscea
+location = Piscea.name
+
 if os.path.exists('saves/locatio'):
     with shelve.open('saves/locatio') as locatio:
         location = locatio.get('planet')
@@ -139,9 +142,7 @@ class lsCannon:
         
         # If rings around the planet exist, they can damage the ship. and stop the cannon's charge.
         while location.rings == True:
-                        
-            flip = [ 'a', 'b', 'c' ]
-            
+                    
             if random.randint(1, 100) <= 25: # if coin lands on side b or c
                 
                 if PS.shield.deployed == True: # and the shield is deployed
@@ -170,6 +171,7 @@ class lsCannon:
                         break
                     
                     else:
+                    
                         PS.health -= 5
                         
                         print("Debris from the rings of", str(location.name), "have damaged your ship.")

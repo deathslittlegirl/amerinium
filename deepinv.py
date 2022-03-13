@@ -61,6 +61,36 @@ class ndb():
 
         with shelve.open('saves/gems') as gems:
             
+            debase = {'THC Crystals': qdb.md[0],
+                      'Psycilobin': qdb.md[1],
+                      'Dextromethorphan': qdb.md[2],
+                      'Diphenhydramine': qdb.md[3],
+                      
+                      'Iron': qdb.mmtl[0],
+                      'Gold': qdb.mmtl[1],
+                      'Silver': qdb.mmtl[2],
+                      'Platnium': qdb.mmtl[3],
+                      
+                      'Ammonia': qdb.mg[0],
+                      'Helium': qdb.mg[1],
+                      'Hydrogen': qdb.mg[2],
+                      'Methane': qdb.mg[3],
+                      'Sulfur': qdb.mg[4],
+                      
+                      'Diamond': qdb.msp[0],
+                      
+                      'Femininium': qdb.ms[0],
+                      'Angelium': qdb.ms[1],
+                      
+                      'Meteorite': qdb.mm[0],
+                      'Moon Rocks': qdb.mm[1],
+                      'Junk': qdb.mm[2] }
+            
+            gems.update(debase)
+            print('Updating contents...')
+            
+            await asyncio.sleep(2) 
+                   
             drg0 = "THC Crystals: {}\n \bPsycilobin: {}\n \bDXM Crystals: {}\n \bDPH Crystals: {}\n"
             
             print(drg0.format(str(gems.get('THC Crystals')), str(gems.get('Psycilobin')), str(gems.get('Dextromethorphan')), str(gems.get('Diphenhydramine'))))

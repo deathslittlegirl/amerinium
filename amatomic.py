@@ -1,4 +1,3 @@
-from argparse import MetavarTypeHelpFormatter
 import random
 from time import sleep
 import asyncio
